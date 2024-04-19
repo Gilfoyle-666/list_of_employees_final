@@ -128,3 +128,6 @@ class main:
 				self.exam.insert("", END, values=row, tags=('red',))
 			else:
 				self.exam_table.insert("", END, values=row, tags=('allok',))
+
+	def run(self):
+		self.root.mainloop()
