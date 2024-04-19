@@ -94,3 +94,17 @@ class main:
 				self.exam.insert("", END, values=row, tags=('red',))
 			else:
 				self.exam_table.insert("", END, values=row, tags=('allok',))
+
+	# очистка инпутов по нажатию кнопки
+	def clear_input(self):
+		self.entry.delete(0, 'end')
+		self.entry2.delete(0, 'end')
+	# проверка введенной даты
+	def is_valid(self,newval):
+		self.result = re.match(r"^\d{0,4}-{0,1}\d{0,2}-{0,1}\d{0,2}$", newval)
+		if not self.result or len(newval) < 10:
+			self.errmsg.set("Дата должна быть в формате ГГГГ-ММ-ДД")
+		else:
+			self.errmsg.set("То что нужно!")
+		return self.result is not None
+	# сохранение в бд
