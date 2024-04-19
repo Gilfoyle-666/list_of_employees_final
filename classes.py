@@ -86,3 +86,11 @@ class main:
 		self.exam.configure(yscrollcommand=self.scroll3.set)
 		self.scroll3.pack(side=RIGHT, fill=Y)
 		self.exam.pack()
+		# наполнение таблиц данными  и окрашивание по условиям
+		for row in self.results:
+			d1 = datetime.datetime.today() + datetime.timedelta(days=60)
+			if d1 > datetime.datetime.strptime(row[2], '%Y-%m-%d'):
+				self.exam_table.insert("", END, values=row, tags=('deadline',))
+				self.exam.insert("", END, values=row, tags=('red',))
+			else:
+				self.exam_table.insert("", END, values=row, tags=('allok',))
