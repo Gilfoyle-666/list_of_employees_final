@@ -99,6 +99,7 @@ class main:
 	def clear_input(self):
 		self.entry.delete(0, 'end')
 		self.entry2.delete(0, 'end')
+
 	# проверка введенной даты
 	def is_valid(self,newval):
 		self.result = re.match(r"^\d{0,4}-{0,1}\d{0,2}-{0,1}\d{0,2}$", newval)
@@ -107,4 +108,23 @@ class main:
 		else:
 			self.errmsg.set("То что нужно!")
 		return self.result is not None
+
 	# сохранение в бд
+	def save_to_db(self):
+		a = self.empl_name.get()
+		b = self.date_of_exam.get()
+		with sqlite3.connect('database.db') as con:
+			self.cursor = con.cursor()
+			self.query2 = """ INSERT INTO employees  (name,date_of_exam) VALUES (?, ?) """
+			self.val = (a, b)
+			self.cursor.execute(self.query2, self.val)
+			self.cursor.execute("select id,name,date_of_exam from employees where id = (select max(id) from employees)")
+			self.results = self.cursor.fetchall()
+			con.commit()
+		for row in self.results:
+			d1 = datetime.datetime.today() + datetime.timedelta(days=60)
+			if d1 > datetime.datetime.strptime(row[2], '%Y-%m-%d'):
+				self.exam_table.insert("", END, values=row, tags=('deadline',))
+				self.exam.insert("", END, values=row, tags=('red',))
+			else:
+				self.exam_table.insert("", END, values=row, tags=('allok',))
