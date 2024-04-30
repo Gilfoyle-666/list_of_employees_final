@@ -10,7 +10,7 @@ class main:
 	def __init__(self,title="Учет сотрудников"):
 		self.root = Tk()
 		self.root.title(title)
-		self.root.geometry("300x550")
+		self.root.geometry("400x600")
 		# создание соединения с базой данных и извлечение данных при открытии приложения
 		self.connection = sqlite3.connect('database.db')
 		self.cur = self.connection.cursor()
@@ -21,6 +21,7 @@ class main:
 		self.connection.commit()
 		self.cur.close()
 		self.connection.close()
+
 
 		# root = Tk()
 		# root.title("Учет сотрудников")
@@ -46,13 +47,18 @@ class main:
 		self.error_label = ttk.Label(foreground="red", textvariable=self.errmsg, wraplength=250)
 		self.error_label.pack()
 
-		self.display_button = tk.Button(text="Внести", command=self.save_to_db, bg="#0088cc", fg="white", width=10)
+		self.display_button = tk.Button(text="Внести", command=self.save_to_db, bg="#0088cc", fg="white", width=15)
 		self.display_button.pack(padx=5, pady=5)
 
-		self.clear_button = tk.Button(text="Очистить", command=self.clear_input, bg="#0088cc", fg="white", width=10)
+		self.clear_button = tk.Button(text="Очистить", command=self.clear_input, bg="#0088cc", fg="white", width=15)
 		self.clear_button.pack(padx=5, pady=5)
 
+		self.delete_button = tk.Button(text="Удалить запись", command=self.clear_db, bg="#0088cc", fg="white", width=15)
+		self.delete_button.pack(padx=5, pady=5)
+
 		# первая таблица со всеми сотрудниками
+		self.label_title_list = ttk.Label(text="Общий список сотрудников:", font=("Arial", 10))
+		self.label_title_list.pack(pady=10)
 		self.frame_exam = Frame()
 		self.frame_exam.pack(expand=tk.YES, fill=tk.BOTH)
 		self.exam_table = ttk.Treeview(self.frame_exam, columns=('id', 'name', 'date'), show="headings", selectmode="browse", style="My.Treeview", height=5)
@@ -60,7 +66,7 @@ class main:
 		self.exam_table.heading("name", text="Имя")
 		self.exam_table.heading("date", text="Дата")
 		self.exam_table.column("#1", stretch=NO, width=40)
-		self.exam_table.column("#2", stretch=NO, width=100)
+		self.exam_table.column("#2", stretch=NO, width=200)
 		self.exam_table.column("#3", stretch=NO, width=100)
 		self.exam_table.tag_configure('deadline', background='green')
 		self.exam_table.tag_configure('allok', background='white')
@@ -79,7 +85,7 @@ class main:
 		self.exam.heading("name", text="Имя")
 		self.exam.heading("date", text="Дата")
 		self.exam.column("#1", stretch=NO, width=40)
-		self.exam.column("#2", stretch=NO, width=100)
+		self.exam.column("#2", stretch=NO, width=200)
 		self.exam.column("#3", stretch=NO, width=100)
 		self.exam.tag_configure('red', background='red')
 		self.scroll3 = Scrollbar(self.frame, orient=VERTICAL, command=self.exam.yview)
@@ -121,6 +127,8 @@ class main:
 			self.cursor.execute("select id,name,date_of_exam from employees where id = (select max(id) from employees)")
 			self.results = self.cursor.fetchall()
 			con.commit()
+			self.cursor.close()
+		con.close()
 		for row in self.results:
 			d1 = datetime.datetime.today() + datetime.timedelta(days=60)
 			if d1 > datetime.datetime.strptime(row[2], '%Y-%m-%d'):
@@ -129,5 +137,27 @@ class main:
 			else:
 				self.exam_table.insert("", END, values=row, tags=('allok',))
 
+	# удаление поля из базы данных
+	def clear_db(self):
+		self.connection = sqlite3.connect('database.db')
+		self.cur = self.connection.cursor()
+		for	tablerow in self.exam_table.selection():
+			arg = self.exam_table.set(tablerow, 0)
+			self.cur.execute('DELETE FROM employees WHERE id=?', (arg,))
+			a = self.exam_table.item(tablerow)["values"][0]
+			self.exam_table.delete(tablerow)
+			for tablerow2 in self.exam.get_children(""):
+				if self.exam.item(tablerow2)["values"][0] == a :
+					self.exam.delete(tablerow2)
+		self.connection.commit()
+		self.cur.close()
+		self.connection.close()
+			#working
+			#self.root.destroy()
+			#self.__init__()
+			#dont
+			#self.root.update()
+
 	def run(self):
 		self.root.mainloop()
+
